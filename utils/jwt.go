@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"os"
 	"time"
 
@@ -16,9 +17,14 @@ func GenerateToken(userID int) (string, error) {
 	return token.SignedString([]byte(secret))
 }
 
-func ValidateToken(tokenString string) (*jwt.Token, error) {
+func ValidateToken(tokenString string) (jwt.MapClaims, error) {
 	secret := os.Getenv("JWT_SECRET")
-	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	claims := jwt.MapClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
 	})
+	if err != nil || !token.Valid {
+		return nil, errors.New("invalid token")
+	}
+	return claims, nil
 }

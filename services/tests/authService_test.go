@@ -13,6 +13,18 @@ type mockUserRepository struct {
 	users map[string]entities.User
 }
 
+func (m *mockUserRepository) FindByID(id int) (*entities.User, error) {
+	panic("unimplemented")
+}
+
+func (m *mockUserRepository) DeactivateUser(userID int) error {
+	panic("unimplemented")
+}
+
+func (m *mockUserRepository) DeleteInactiveUsers() error {
+	panic("unimplemented")
+}
+
 func (m *mockUserRepository) FindByEmail(email string) (*entities.User, error) {
 	user, exists := m.users[email]
 	if !exists {
@@ -71,4 +83,28 @@ func TestLogin(t *testing.T) {
 
 	_, err = service.Login("testuser", "wrongpassword")
 	assert.NotNil(t, err)
+}
+
+func TestUpdate(t *testing.T) {
+	repo := &mockUserRepository{users: make(map[string]entities.User)}
+	service := services.NewAuthService(repo)
+
+	user := entities.User{
+		Username: "testuser",
+		Password: "password123",
+	}
+
+	err := service.Register(user)
+	assert.Nil(t, err)
+
+	user.Password = "newpassword123"
+	err = service.Update(user)
+	assert.Nil(t, err)
+
+	_, err = service.Login("testuser", "password123")
+	assert.NotNil(t, err)
+
+	token, err := service.Login("testuser", "newpassword123")
+	assert.Nil(t, err)
+	assert.NotEmpty(t, token)
 }

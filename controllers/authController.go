@@ -34,7 +34,7 @@ func (ac *AuthController) Login(c *gin.Context) {
 	if err != nil {
 		utils.GetLogger().WithError(err).Error("Failed to login in controller method Login.")
 
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication failed"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -54,7 +54,7 @@ func (ac *AuthController) Register(c *gin.Context) {
 	if err != nil {
 		utils.GetLogger().WithError(err).Error("Failed to register in controller method Register.")
 
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "registration failed"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -74,9 +74,28 @@ func (ac *AuthController) Update(c *gin.Context) {
 	if err != nil {
 		utils.GetLogger().WithError(err).Error("Failed to update in controller method Update.")
 
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "update failed"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "update successful"})
+}
+
+func (ac *AuthController) Deactivate(c *gin.Context) {
+	userID, exists := c.Get("userID")
+	if !exists {
+		utils.GetLogger().Error("User ID not found in context")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	err := ac.authService.DeactivateAccount(userID.(int))
+	if err != nil {
+		utils.GetLogger().WithError(err).Error("Failed to deactivate account in controller method Deactivate.")
+
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "account deactivated successfully"})
 }

@@ -4,9 +4,11 @@ import (
 	"log"
 
 	"github.com/Renan-Parise/codium/database"
+	"github.com/Renan-Parise/codium/repositories"
 	"github.com/Renan-Parise/codium/routes"
 	"github.com/Renan-Parise/codium/utils"
 	"github.com/joho/godotenv"
+	"github.com/robfig/cron/v3"
 )
 
 func main() {
@@ -19,7 +21,23 @@ func main() {
 	utils.InitElasticAPM()
 
 	database.GetDBInstance()
-	router := routes.SetupRouter()
 
+	c := cron.New()
+	_, err = c.AddFunc("@weekly", func() {
+		userRepo := repositories.NewUserRepository()
+		err := userRepo.DeleteInactiveUsers()
+		if err != nil {
+			utils.GetLogger().WithError(err).Error("Failed to delete inactive users in cron job.")
+		} else {
+			utils.GetLogger().Info("Successfully deleted inactive users.")
+		}
+	})
+	if err != nil {
+		utils.GetLogger().WithError(err).Error("Failed to schedule cron job.")
+	}
+	c.Start()
+	defer c.Stop()
+
+	router := routes.SetupRouter()
 	router.Run("127.0.0.1:8181")
 }

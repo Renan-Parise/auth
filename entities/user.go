@@ -2,15 +2,18 @@ package entities
 
 import (
 	"regexp"
+	"time"
 
 	"github.com/Renan-Parise/codium/errors"
 )
 
 type User struct {
-	ID       int    `json:"id"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	ID            int       `json:"id"`
+	Username      string    `json:"username"`
+	Email         string    `json:"email"`
+	Password      string    `json:"password"`
+	Active        bool      `json:"active"`
+	DeactivatedAt time.Time `json:"deactivatedAt"`
 }
 
 func (u *User) Validate() error {

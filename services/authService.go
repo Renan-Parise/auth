@@ -12,6 +12,7 @@ type AuthService interface {
 	Login(email, password string) (string, error)
 	Register(user entities.User) error
 	Update(user entities.User) error
+	DeactivateAccount(userID int) error
 }
 
 type authService struct {
@@ -26,6 +27,10 @@ func (s *authService) Login(email, password string) (string, error) {
 	user, err := s.userRepo.FindByEmail(email)
 	if err != nil {
 		return "", errors.NewServiceError("authentication failed because user does not exist")
+	}
+
+	if !user.Active {
+		return "", errors.NewServiceError("authentication failed because account is deactivated")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
@@ -74,5 +79,13 @@ func (s *authService) Update(user entities.User) error {
 		return errors.NewServiceError("failed to update user. please try again")
 	}
 
+	return nil
+}
+
+func (s *authService) DeactivateAccount(userID int) error {
+	err := s.userRepo.DeactivateUser(userID)
+	if err != nil {
+		return errors.NewServiceError("failed to deactivate account")
+	}
 	return nil
 }
