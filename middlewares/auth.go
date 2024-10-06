@@ -33,11 +33,11 @@ func AuthMiddleware() gin.HandlerFunc {
 		userRepo := repositories.NewUserRepository()
 		user, err := userRepo.FindByID(userID)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "user not found"})
+			c.AbortWithStatusJSON(http.StatusNoContent, gin.H{"error": "user not found"})
 			return
 		}
 		if !user.Active {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "user account is deactivated"})
+			c.AbortWithStatusJSON(http.StatusLocked, gin.H{"error": "user account is deactivated"})
 			return
 		}
 
