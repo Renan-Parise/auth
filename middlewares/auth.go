@@ -18,7 +18,6 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		claims, err := utils.ValidateToken(tokenString)
 		if err != nil {
-			utils.GetLogger().WithError(err).Error("Invalid authentication token")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid authentication token"})
 			return
 		}

@@ -27,7 +27,7 @@ func GetDBInstance() *sql.DB {
 		)
 		database, err := sql.Open("mysql", dsn)
 		if err != nil {
-			utils.GetLogger().WithError(err).Error("Error connecting to database")
+			utils.GetLogger().WithError(err).Error("Error connecting to database: ", err)
 
 			errors.NewDatabaseError(err.Error())
 			panic(err)

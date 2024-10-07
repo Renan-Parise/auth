@@ -24,7 +24,7 @@ func (ac *AuthController) Login(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&credentials); err != nil {
-		utils.GetLogger().WithError(err).Error("Failed to bind JSON in controller method Login.")
+		utils.GetLogger().WithError(err).Error("Failed to bind JSON in controller method Login: ", err)
 
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -32,7 +32,7 @@ func (ac *AuthController) Login(c *gin.Context) {
 
 	token, err := ac.authService.Login(credentials.Email, credentials.Password)
 	if err != nil {
-		utils.GetLogger().WithError(err).Error("Failed to login in controller method Login.")
+		utils.GetLogger().WithError(err).Error("Failed to login in controller method Login: ", err)
 
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
@@ -44,7 +44,7 @@ func (ac *AuthController) Login(c *gin.Context) {
 func (ac *AuthController) Register(c *gin.Context) {
 	var user entities.User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		utils.GetLogger().WithError(err).Error("Failed to bind JSON in controller method Register.")
+		utils.GetLogger().WithError(err).Error("Failed to bind JSON in controller method Register: ", err)
 
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -52,7 +52,7 @@ func (ac *AuthController) Register(c *gin.Context) {
 
 	err := ac.authService.Register(user)
 	if err != nil {
-		utils.GetLogger().WithError(err).Error("Failed to register in controller method Register.")
+		utils.GetLogger().WithError(err).Error("Failed to register in controller method Register: ", err)
 
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -64,7 +64,7 @@ func (ac *AuthController) Register(c *gin.Context) {
 func (ac *AuthController) Update(c *gin.Context) {
 	var user entities.User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		utils.GetLogger().WithError(err).Error("Failed to bind JSON in controller method Update.")
+		utils.GetLogger().WithError(err).Error("Failed to bind JSON in controller method Update: ", err)
 
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -72,7 +72,7 @@ func (ac *AuthController) Update(c *gin.Context) {
 
 	err := ac.authService.Update(user)
 	if err != nil {
-		utils.GetLogger().WithError(err).Error("Failed to update in controller method Update.")
+		utils.GetLogger().WithError(err).Error("Failed to update in controller method Update: ", err)
 
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -91,7 +91,7 @@ func (ac *AuthController) Deactivate(c *gin.Context) {
 
 	err := ac.authService.DeactivateAccount(userID.(int))
 	if err != nil {
-		utils.GetLogger().WithError(err).Error("Failed to deactivate account in controller method Deactivate.")
+		utils.GetLogger().WithError(err).Error("Failed to deactivate account in controller method Deactivate: ", err)
 
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

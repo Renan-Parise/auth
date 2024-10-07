@@ -55,7 +55,7 @@ func (r *userRepository) Create(user entities.User) error {
 	query := "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
 	_, err := db.Exec(query, user.Username, user.Email, user.Password)
 	if err != nil {
-		utils.GetLogger().WithError(err).Error("Failed to create user in repository method Create.")
+		utils.GetLogger().WithError(err).Error("Failed to create user in repository method Create: ", err)
 
 		return errors.NewQueryError(err.Error())
 	}
@@ -67,7 +67,7 @@ func (r *userRepository) Update(user entities.User) error {
 	query := "UPDATE users SET username = ?, password = ? WHERE email = ?"
 	_, err := db.Exec(query, user.Username, user.Password, user.Email)
 	if err != nil {
-		utils.GetLogger().WithError(err).Error("Failed to update user in repository method Update.")
+		utils.GetLogger().WithError(err).Error("Failed to update user in repository method Update: ", err)
 
 		return errors.NewQueryError(err.Error())
 	}
@@ -79,7 +79,7 @@ func (r *userRepository) DeactivateUser(userID int) error {
 	query := "UPDATE users SET active = ?, deactivatedAt = ? WHERE id = ?"
 	_, err := db.Exec(query, false, time.Now(), userID)
 	if err != nil {
-		utils.GetLogger().WithError(err).Error("Failed to deactivate user in repository method DeactivateUser.")
+		utils.GetLogger().WithError(err).Error("Failed to deactivate user in repository method DeactivateUser: ", err)
 		return errors.NewQueryError(err.Error())
 	}
 	return nil
@@ -91,7 +91,7 @@ func (r *userRepository) DeleteInactiveUsers() error {
 	cutoffDate := time.Now().AddDate(0, 0, -30)
 	result, err := db.Exec(query, false, cutoffDate)
 	if err != nil {
-		utils.GetLogger().WithError(err).Error("Failed to delete inactive users in repository method DeleteInactiveUsers.")
+		utils.GetLogger().WithError(err).Error("Failed to delete inactive users in repository method DeleteInactiveUsers: ", err)
 		return errors.NewQueryError(err.Error())
 	}
 	rowsAffected, _ := result.RowsAffected()

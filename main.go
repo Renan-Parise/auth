@@ -27,13 +27,11 @@ func main() {
 		userRepo := repositories.NewUserRepository()
 		err := userRepo.DeleteInactiveUsers()
 		if err != nil {
-			utils.GetLogger().WithError(err).Error("Failed to delete inactive users in cron job.")
-		} else {
-			utils.GetLogger().Info("Successfully deleted inactive users.")
+			utils.GetLogger().WithError(err).Error("Failed to delete inactive users in cron job: ", err)
 		}
 	})
 	if err != nil {
-		utils.GetLogger().WithError(err).Error("Failed to schedule cron job.")
+		utils.GetLogger().WithError(err).Error("Failed to schedule cron job: ", err)
 	}
 	c.Start()
 	defer c.Stop()
