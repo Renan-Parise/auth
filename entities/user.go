@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/Renan-Parise/codium/errors"
+	"github.com/Renan-Parise/codium-auth/errors"
 )
 
 type User struct {

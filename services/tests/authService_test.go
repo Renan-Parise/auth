@@ -3,9 +3,9 @@ package services
 import (
 	"testing"
 
-	"github.com/Renan-Parise/codium/entities"
-	"github.com/Renan-Parise/codium/errors"
-	"github.com/Renan-Parise/codium/services"
+	"github.com/Renan-Parise/codium-auth/entities"
+	"github.com/Renan-Parise/codium-auth/errors"
+	"github.com/Renan-Parise/codium-auth/services"
 	"github.com/stretchr/testify/assert"
 )
 

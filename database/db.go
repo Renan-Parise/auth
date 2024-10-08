@@ -6,8 +6,8 @@ import (
 	"os"
 	"sync"
 
-	"github.com/Renan-Parise/codium/errors"
-	"github.com/Renan-Parise/codium/utils"
+	"github.com/Renan-Parise/codium-auth/errors"
+	"github.com/Renan-Parise/codium-auth/utils"
 	_ "github.com/go-sql-driver/mysql"
 )
 

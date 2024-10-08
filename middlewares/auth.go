@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Renan-Parise/codium/repositories"
-	"github.com/Renan-Parise/codium/utils"
+	"github.com/Renan-Parise/codium-auth/repositories"
+	"github.com/Renan-Parise/codium-auth/utils"
 	"github.com/gin-gonic/gin"
 )
 

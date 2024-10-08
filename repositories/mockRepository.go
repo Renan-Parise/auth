@@ -3,8 +3,8 @@ package repositories
 import (
 	"strconv"
 
-	"github.com/Renan-Parise/codium/entities"
-	"github.com/Renan-Parise/codium/errors"
+	"github.com/Renan-Parise/codium-auth/entities"
+	"github.com/Renan-Parise/codium-auth/errors"
 )
 
 type MockUserRepository struct {

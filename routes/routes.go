@@ -1,10 +1,10 @@
 package routes
 
 import (
-	"github.com/Renan-Parise/codium/controllers"
-	"github.com/Renan-Parise/codium/middlewares"
-	"github.com/Renan-Parise/codium/repositories"
-	"github.com/Renan-Parise/codium/services"
+	"github.com/Renan-Parise/codium-auth/controllers"
+	"github.com/Renan-Parise/codium-auth/middlewares"
+	"github.com/Renan-Parise/codium-auth/repositories"
+	"github.com/Renan-Parise/codium-auth/services"
 
 	"github.com/gin-gonic/gin"
 )

@@ -3,9 +3,9 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/Renan-Parise/codium/entities"
-	"github.com/Renan-Parise/codium/services"
-	"github.com/Renan-Parise/codium/utils"
+	"github.com/Renan-Parise/codium-auth/entities"
+	"github.com/Renan-Parise/codium-auth/services"
+	"github.com/Renan-Parise/codium-auth/utils"
 	"github.com/gin-gonic/gin"
 )
 
