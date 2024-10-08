@@ -17,7 +17,7 @@ func (m *mockUserRepository) FindByID(id int) (*entities.User, error) {
 	panic("unimplemented")
 }
 
-func (m *mockUserRepository) DeactivateUser(userID int) error {
+func (m *mockUserRepository) DeactivateUser(ID int) error {
 	panic("unimplemented")
 }
 
@@ -41,7 +41,7 @@ func (m *mockUserRepository) Create(user entities.User) error {
 	return nil
 }
 
-func (m *mockUserRepository) Update(user entities.User) error {
+func (m *mockUserRepository) Update(ID int, user entities.User) error {
 	if _, exists := m.users[user.Username]; !exists {
 		return errors.NewQueryError("user not found")
 	}
@@ -56,6 +56,7 @@ func TestRegister(t *testing.T) {
 	user := entities.User{
 		Username: "testuser",
 		Password: "password123",
+		Email:    "testuser@example.com",
 	}
 
 	err := service.Register(user)
@@ -97,8 +98,10 @@ func TestUpdate(t *testing.T) {
 	err := service.Register(user)
 	assert.Nil(t, err)
 
+	ID := 0
+
 	user.Password = "newpassword123"
-	err = service.Update(user)
+	err = service.Update(ID, user)
 	assert.Nil(t, err)
 
 	_, err = service.Login("testuser", "password123")

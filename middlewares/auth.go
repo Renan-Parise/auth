@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/Renan-Parise/codium/repositories"
 	"github.com/Renan-Parise/codium/utils"
@@ -10,11 +11,19 @@ import (
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenString := c.GetHeader("Authorization")
-		if tokenString == "" {
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing authentication token"})
 			return
 		}
+
+		tokenParts := strings.Split(authHeader, " ")
+		if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid authentication token format"})
+			return
+		}
+
+		tokenString := tokenParts[1]
 
 		claims, err := utils.ValidateToken(tokenString)
 		if err != nil {
@@ -22,15 +31,15 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		userIDFloat, ok := claims["user_id"].(float64)
+		IDFloat, ok := claims["user_id"].(float64)
 		if !ok {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid authentication token"})
 			return
 		}
-		userID := int(userIDFloat)
+		ID := int(IDFloat)
 
 		userRepo := repositories.NewUserRepository()
-		user, err := userRepo.FindByID(userID)
+		user, err := userRepo.FindByID(ID)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusNoContent, gin.H{"error": "user not found"})
 			return
@@ -40,7 +49,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("userID", userID)
+		c.Set("ID", ID)
 		c.Next()
 	}
 }

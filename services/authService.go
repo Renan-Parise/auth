@@ -11,8 +11,8 @@ import (
 type AuthService interface {
 	Login(email, password string) (string, error)
 	Register(user entities.User) error
-	Update(user entities.User) error
-	DeactivateAccount(userID int) error
+	Update(ID int, user entities.User) error
+	DeactivateAccount(ID int) error
 }
 
 type authService struct {
@@ -66,7 +66,7 @@ func (s *authService) Register(user entities.User) error {
 	return nil
 }
 
-func (s *authService) Update(user entities.User) error {
+func (s *authService) Update(ID int, user entities.User) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return errors.NewServiceError("failed to hash password. please try again")
@@ -74,7 +74,7 @@ func (s *authService) Update(user entities.User) error {
 
 	user.Password = string(hashedPassword)
 
-	err = s.userRepo.Update(user)
+	err = s.userRepo.Update(ID, user)
 	if err != nil {
 		return errors.NewServiceError("failed to update user. please try again")
 	}
@@ -82,8 +82,8 @@ func (s *authService) Update(user entities.User) error {
 	return nil
 }
 
-func (s *authService) DeactivateAccount(userID int) error {
-	err := s.userRepo.DeactivateUser(userID)
+func (s *authService) DeactivateAccount(ID int) error {
+	err := s.userRepo.DeactivateUser(ID)
 	if err != nil {
 		return errors.NewServiceError("failed to deactivate account")
 	}

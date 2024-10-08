@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"strconv"
+
 	"github.com/Renan-Parise/codium/entities"
 	"github.com/Renan-Parise/codium/errors"
 )
@@ -15,8 +17,18 @@ func NewMockUserRepository() UserRepository {
 	}
 }
 
-func (m *MockUserRepository) FindByID(id int) (*entities.User, error) {
+func (m *MockUserRepository) DeactivateUser(ID int) error {
 	panic("unimplemented")
+}
+
+func (m *MockUserRepository) FindByID(id int) (*entities.User, error) {
+	stringID := strconv.Itoa(id)
+	user, exists := m.Users[stringID]
+	if !exists {
+		return nil, errors.NewQueryError("user not found")
+	}
+
+	return &user, nil
 }
 
 func (m *MockUserRepository) DeleteInactiveUsers() error {
@@ -39,21 +51,10 @@ func (m *MockUserRepository) Create(user entities.User) error {
 	return nil
 }
 
-func (m *MockUserRepository) Update(user entities.User) error {
+func (m *MockUserRepository) Update(ID int, user entities.User) error {
 	if _, exists := m.Users[user.Username]; !exists {
 		return errors.NewQueryError("user not found")
 	}
 	m.Users[user.Username] = user
 	return nil
-}
-
-func (m *MockUserRepository) DeactivateUser(userID int) error {
-	for _, user := range m.Users {
-		if user.ID == userID {
-			user.Active = false
-			user.DeactivatedAt = user.DeactivatedAt
-			return nil
-		}
-	}
-	return errors.NewQueryError("user not found")
 }

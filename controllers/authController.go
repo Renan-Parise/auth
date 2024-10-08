@@ -62,6 +62,13 @@ func (ac *AuthController) Register(c *gin.Context) {
 }
 
 func (ac *AuthController) Update(c *gin.Context) {
+	ID, exists := c.Get("ID")
+	if !exists {
+		utils.GetLogger().Error("User ID not found in context")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
 	var user entities.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		utils.GetLogger().WithError(err).Error("Failed to bind JSON in controller method Update: ", err)
@@ -70,7 +77,7 @@ func (ac *AuthController) Update(c *gin.Context) {
 		return
 	}
 
-	err := ac.authService.Update(user)
+	err := ac.authService.Update(ID.(int), user)
 	if err != nil {
 		utils.GetLogger().WithError(err).Error("Failed to update in controller method Update: ", err)
 
@@ -82,14 +89,14 @@ func (ac *AuthController) Update(c *gin.Context) {
 }
 
 func (ac *AuthController) Deactivate(c *gin.Context) {
-	userID, exists := c.Get("userID")
+	ID, exists := c.Get("ID")
 	if !exists {
 		utils.GetLogger().Error("User ID not found in context")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
-	err := ac.authService.DeactivateAccount(userID.(int))
+	err := ac.authService.DeactivateAccount(ID.(int))
 	if err != nil {
 		utils.GetLogger().WithError(err).Error("Failed to deactivate account in controller method Deactivate: ", err)
 

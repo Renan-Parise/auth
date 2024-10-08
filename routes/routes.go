@@ -20,7 +20,7 @@ func SetupRouter() *gin.Engine {
 	{
 		authRoutes.POST("/login", authController.Login)
 		authRoutes.POST("/register", authController.Register)
-		authRoutes.PUT("/update", authController.Update)
+		authRoutes.PUT("/update", middlewares.AuthMiddleware(), authController.Update)
 		authRoutes.DELETE("/deactivate", middlewares.AuthMiddleware(), authController.Deactivate)
 	}
 

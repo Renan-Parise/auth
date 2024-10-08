@@ -8,10 +8,10 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-func GenerateToken(userID int) (string, error) {
+func GenerateToken(ID int) (string, error) {
 	secret := os.Getenv("JWT_SECRET")
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": userID,
+		"user_id": ID,
 		"exp":     time.Now().Add(72 * time.Hour).Unix(),
 	})
 	return token.SignedString([]byte(secret))
