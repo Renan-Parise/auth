@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/Renan-Parise/codium-auth/database"
@@ -17,6 +16,8 @@ type UserRepository interface {
 	Update(ID int, user entities.User) error
 	DeactivateUser(ID int) error
 	DeleteInactiveUsers() error
+	UpdateTwoFACode(user *entities.User) error
+	UpdateTwoFASettings(user *entities.User) error
 }
 
 type userRepository struct{}
@@ -28,25 +29,60 @@ func NewUserRepository() UserRepository {
 func (r *userRepository) FindByID(id int) (*entities.User, error) {
 	db := database.GetDBInstance()
 	user := &entities.User{}
-	query := "SELECT id, username, email, password, active FROM users WHERE id = ?"
-	err := db.QueryRow(query, id).Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Active)
+	query := "SELECT id, username, email, password, active, isTwoFAEnabled, twoFACode, twoFACodeExpiration FROM users WHERE id = ?"
+
+	var twoFACodeExpiresAtStr string
+
+	err := db.QueryRow(query, id).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.Password,
+		&user.Active,
+		&user.Is2FAEnabled,
+		&user.TwoFACode,
+		&twoFACodeExpiresAtStr,
+	)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errors.NewQueryError("User not found")
-		}
 		return nil, errors.NewQueryError(err.Error())
 	}
+
+	parsedTime, err := time.Parse("2006-01-02 15:04:05", twoFACodeExpiresAtStr)
+	if err != nil {
+		return nil, errors.NewQueryError("invalid expiration time format: " + err.Error())
+	}
+	user.TwoFACodeExpiresAt = &parsedTime
+
 	return user, nil
 }
 
 func (r *userRepository) FindByEmail(email string) (*entities.User, error) {
 	db := database.GetDBInstance()
 	user := &entities.User{}
-	query := "SELECT id, username, password, active FROM users WHERE email = ?"
-	err := db.QueryRow(query, email).Scan(&user.ID, &user.Username, &user.Password, &user.Active)
+	query := "SELECT id, username, email, password, active, isTwoFAEnabled, twoFACode, twoFACodeExpiration FROM users WHERE email = ?"
+
+	var twoFACodeExpiresAtStr string
+
+	err := db.QueryRow(query, email).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.Password,
+		&user.Active,
+		&user.Is2FAEnabled,
+		&user.TwoFACode,
+		&twoFACodeExpiresAtStr,
+	)
 	if err != nil {
 		return nil, errors.NewQueryError(err.Error())
 	}
+
+	parsedTime, err := time.Parse("2006-01-02 15:04:05", twoFACodeExpiresAtStr)
+	if err != nil {
+		return nil, errors.NewQueryError("invalid expiration time format: " + err.Error())
+	}
+	user.TwoFACodeExpiresAt = &parsedTime
+
 	return user, nil
 }
 
@@ -64,8 +100,8 @@ func (r *userRepository) Create(user entities.User) error {
 
 func (r *userRepository) Update(ID int, user entities.User) error {
 	db := database.GetDBInstance()
-	query := "UPDATE users SET username = ?, password = ?, email = ? WHERE id = ?"
-	_, err := db.Exec(query, user.Username, user.Password, user.Email, ID)
+	query := "UPDATE users SET username = ? WHERE id = ?"
+	_, err := db.Exec(query, user.Username, ID)
 	if err != nil {
 		utils.GetLogger().WithError(err).Error("Failed to update user in repository method Update: ", err)
 
@@ -87,7 +123,7 @@ func (r *userRepository) DeactivateUser(ID int) error {
 
 func (r *userRepository) DeleteInactiveUsers() error {
 	db := database.GetDBInstance()
-	query := "DELETE FROM users WHERE is_active = ? AND deactivated_at <= ?"
+	query := "DELETE FROM users WHERE active = ? AND deactivatedAt <= ?"
 	cutoffDate := time.Now().AddDate(0, 0, -30)
 	result, err := db.Exec(query, false, cutoffDate)
 	if err != nil {
@@ -96,5 +132,25 @@ func (r *userRepository) DeleteInactiveUsers() error {
 	}
 	rowsAffected, _ := result.RowsAffected()
 	utils.GetLogger().Infof("Deleted %d inactive users.", rowsAffected)
+	return nil
+}
+
+func (r *userRepository) UpdateTwoFACode(user *entities.User) error {
+	db := database.GetDBInstance()
+	query := "UPDATE users SET twoFACode = ?, twoFACodeExpiration = ? WHERE id = ?"
+	_, err := db.Exec(query, user.TwoFACode, user.TwoFACodeExpiresAt, user.ID)
+	if err != nil {
+		return errors.NewQueryError(err.Error())
+	}
+	return nil
+}
+
+func (r *userRepository) UpdateTwoFASettings(user *entities.User) error {
+	db := database.GetDBInstance()
+	query := "UPDATE users SET isTwoFAEnabled = ? WHERE id = ?"
+	_, err := db.Exec(query, user.Is2FAEnabled, user.ID)
+	if err != nil {
+		return errors.NewQueryError(err.Error())
+	}
 	return nil
 }

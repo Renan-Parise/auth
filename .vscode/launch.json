@@ -9,7 +9,7 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "C:\\Users\\renan\\Desktop\\codium\\main.go",
+            "program": "C:\\Users\\renan\\Desktop\\codium\\auth\\main.go",
             "dlvFlags": ["--check-go-version=false"] 
         },
 

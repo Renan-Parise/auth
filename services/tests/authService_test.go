@@ -25,6 +25,14 @@ func (m *mockUserRepository) DeleteInactiveUsers() error {
 	panic("unimplemented")
 }
 
+func (m *mockUserRepository) UpdateTwoFACode(user *entities.User) error {
+	panic("unimplemented")
+}
+
+func (m *mockUserRepository) UpdateTwoFASettings(user *entities.User) error {
+	panic("unimplemented")
+}
+
 func (m *mockUserRepository) FindByEmail(email string) (*entities.User, error) {
 	user, exists := m.users[email]
 	if !exists {

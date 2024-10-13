@@ -20,8 +20,12 @@ func SetupRouter() *gin.Engine {
 	{
 		authRoutes.POST("/login", authController.Login)
 		authRoutes.POST("/register", authController.Register)
+		authRoutes.POST("/fa/confirm", authController.ConfirmTwoFA)
+
 		authRoutes.PUT("/update", middlewares.AuthMiddleware(), authController.Update)
 		authRoutes.DELETE("/deactivate", middlewares.AuthMiddleware(), authController.Deactivate)
+		authRoutes.POST("/fa/toggle", middlewares.AuthMiddleware(), authController.ToggleTwoFA)
+		authRoutes.POST("/fa/confirm-toggle", middlewares.AuthMiddleware(), authController.ConfirmToggleTwoFA)
 	}
 
 	pingController := controllers.NewPingController()

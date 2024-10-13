@@ -7,13 +7,24 @@ import (
 	"github.com/Renan-Parise/codium-auth/errors"
 )
 
+var ErrTwoFARequired = errors.NewServiceError("2FA required")
+
 type User struct {
-	ID            int       `json:"id"`
-	Username      string    `json:"username"`
-	Email         string    `json:"email"`
-	Password      string    `json:"password"`
-	Active        bool      `json:"active"`
-	DeactivatedAt time.Time `json:"deactivatedAt"`
+	ID                 int        `json:"id"`
+	Username           string     `json:"username"`
+	Email              string     `json:"email"`
+	Password           string     `json:"password"`
+	Active             bool       `json:"active"`
+	DeactivatedAt      *time.Time `json:"deactivatedAt"`
+	Is2FAEnabled       bool       `json:"is2FAEnabled"`
+	TwoFACode          *string    `json:"-"`
+	TwoFACodeExpiresAt *time.Time `json:"-"`
+}
+
+type Email struct {
+	Address string `json:"address"`
+	Subject string `json:"subject"`
+	Body    string `json:"body"`
 }
 
 func (u *User) Validate() error {

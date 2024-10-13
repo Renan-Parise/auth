@@ -17,6 +17,14 @@ func NewMockUserRepository() UserRepository {
 	}
 }
 
+func (m *MockUserRepository) UpdateTwoFACode(user *entities.User) error {
+	panic("unimplemented")
+}
+
+func (m *MockUserRepository) UpdateTwoFASettings(user *entities.User) error {
+	panic("unimplemented")
+}
+
 func (m *MockUserRepository) DeactivateUser(ID int) error {
 	panic("unimplemented")
 }

@@ -1,6 +1,9 @@
 package services
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/Renan-Parise/codium-auth/entities"
 	"github.com/Renan-Parise/codium-auth/errors"
 	"github.com/Renan-Parise/codium-auth/repositories"
@@ -13,6 +16,10 @@ type AuthService interface {
 	Register(user entities.User) error
 	Update(ID int, user entities.User) error
 	DeactivateAccount(ID int) error
+	GenerateAndSendTwoFACode(user *entities.User) error
+	VerifyTwoFACode(email, code string) (string, error)
+	GenerateAndSendTwoFACodeByID(userID int) error
+	ToggleTwoFA(userID int, code string) error
 }
 
 type authService struct {
@@ -36,6 +43,14 @@ func (s *authService) Login(email, password string) (string, error) {
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		return "", errors.NewServiceError("authentication failed because password is incorrect")
+	}
+
+	if user.Is2FAEnabled {
+		err := s.GenerateAndSendTwoFACode(user)
+		if err != nil {
+			return "", errors.NewServiceError("failed to send 2FA code")
+		}
+		return "", entities.ErrTwoFARequired
 	}
 
 	return utils.GenerateToken(user.ID)
@@ -87,5 +102,94 @@ func (s *authService) DeactivateAccount(ID int) error {
 	if err != nil {
 		return errors.NewServiceError("failed to deactivate account")
 	}
+	return nil
+}
+
+func (s *authService) GenerateAndSendTwoFACode(user *entities.User) error {
+	code := utils.GenerateCode(6)
+
+	user.TwoFACode = &code
+	expirationTime := time.Now().Add(5 * time.Minute)
+	user.TwoFACodeExpiresAt = &expirationTime
+
+	err := s.userRepo.UpdateTwoFACode(user)
+	if err != nil {
+		return err
+	}
+
+	err = s.sendTwoFACodeEmail(user.Email, code)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *authService) VerifyTwoFACode(email string, code string) (string, error) {
+	user, err := s.userRepo.FindByEmail(email)
+	if err != nil {
+		return "", errors.NewServiceError("user not found")
+	}
+
+	if *user.TwoFACode != code || time.Now().After(*user.TwoFACodeExpiresAt) {
+		return "", errors.NewServiceError("invalid or expired 2FA code")
+	}
+
+	user.TwoFACode = nil
+	user.TwoFACodeExpiresAt = nil
+
+	err = s.userRepo.UpdateTwoFACode(user)
+	if err != nil {
+		return "", err
+	}
+
+	return utils.GenerateToken(user.ID)
+}
+
+func (s *authService) sendTwoFACodeEmail(email, code string) error {
+	emailEntity := entities.Email{
+		Address: email,
+		Subject: "Your Two-Factor Authentication Code",
+		Body:    fmt.Sprintf("Your Two-Factor Authentication code is: %s", code),
+	}
+
+	err := utils.SendEmail(emailEntity)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *authService) GenerateAndSendTwoFACodeByID(userID int) error {
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return errors.NewServiceError("user not found")
+	}
+
+	return s.GenerateAndSendTwoFACode(user)
+}
+
+func (s *authService) ToggleTwoFA(userID int, code string) error {
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return errors.NewServiceError("user not found")
+	}
+
+	if *user.TwoFACode != code || time.Now().After(*user.TwoFACodeExpiresAt) {
+		return errors.NewServiceError("invalid or expired 2FA code")
+	}
+
+	if user.Is2FAEnabled {
+		user.Is2FAEnabled = false
+	} else {
+		user.Is2FAEnabled = true
+	}
+
+	err = s.userRepo.UpdateTwoFASettings(user)
+	if err != nil {
+		return errors.NewServiceError("failed to update 2FA settings")
+	}
+
 	return nil
 }

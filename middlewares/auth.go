@@ -27,7 +27,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		claims, err := utils.ValidateToken(tokenString)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid authentication token"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid authentication token: " + err.Error()})
 			return
 		}
 
@@ -41,7 +41,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		userRepo := repositories.NewUserRepository()
 		user, err := userRepo.FindByID(ID)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusNoContent, gin.H{"error": "user not found"})
+			c.AbortWithStatusJSON(http.StatusNoContent, gin.H{"error": "user not found: " + err.Error()})
 			return
 		}
 		if !user.Active {
