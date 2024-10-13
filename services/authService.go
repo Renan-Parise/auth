@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/Renan-Parise/codium-auth/entities"
@@ -20,6 +19,8 @@ type AuthService interface {
 	VerifyTwoFACode(email, code string) (string, error)
 	GenerateAndSendTwoFACodeByID(userID int) error
 	ToggleTwoFA(userID int, code string) error
+	InitiatePasswordRecovery(email string) error
+	ResetPassword(email, code, newPassword string) error
 }
 
 type authService struct {
@@ -146,21 +147,6 @@ func (s *authService) VerifyTwoFACode(email string, code string) (string, error)
 	return utils.GenerateToken(user.ID)
 }
 
-func (s *authService) sendTwoFACodeEmail(email, code string) error {
-	emailEntity := entities.Email{
-		Address: email,
-		Subject: "Your Two-Factor Authentication Code",
-		Body:    fmt.Sprintf("Your Two-Factor Authentication code is: %s", code),
-	}
-
-	err := utils.SendEmail(emailEntity)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (s *authService) GenerateAndSendTwoFACodeByID(userID int) error {
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
@@ -189,6 +175,57 @@ func (s *authService) ToggleTwoFA(userID int, code string) error {
 	err = s.userRepo.UpdateTwoFASettings(user)
 	if err != nil {
 		return errors.NewServiceError("failed to update 2FA settings")
+	}
+
+	return nil
+}
+
+func (s *authService) InitiatePasswordRecovery(email string) error {
+	user, err := s.userRepo.FindByEmail(email)
+	if err != nil {
+		return errors.NewServiceError("user not found")
+	}
+
+	code := utils.GenerateCode(6)
+	user.PasswordRecoveryCode = &code
+	expirationTime := time.Now().Add(30 * time.Minute)
+	user.RecoveryCodeExpiresAt = &expirationTime
+
+	err = s.userRepo.UpdatePasswordRecoveryCode(user)
+	if err != nil {
+		return errors.NewServiceError("failed to save recovery code")
+	}
+
+	err = s.sendPasswordRecoveryEmail(user.Email, code)
+	if err != nil {
+		return errors.NewServiceError("failed to send recovery email")
+	}
+
+	return nil
+}
+
+func (s *authService) ResetPassword(email, code, newPassword string) error {
+	user, err := s.userRepo.FindByEmail(email)
+	if err != nil {
+		return errors.NewServiceError("user not found")
+	}
+
+	if user.PasswordRecoveryCode == nil || *user.PasswordRecoveryCode != code || time.Now().After(*user.RecoveryCodeExpiresAt) {
+		return errors.NewServiceError("invalid or expired recovery code")
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return errors.NewServiceError("failed to hash new password")
+	}
+
+	user.Password = string(hashedPassword)
+	user.PasswordRecoveryCode = nil
+	user.RecoveryCodeExpiresAt = nil
+
+	err = s.userRepo.UpdatePassword(user)
+	if err != nil {
+		return errors.NewServiceError("failed to update password")
 	}
 
 	return nil

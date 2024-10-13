@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/Renan-Parise/codium-auth/database"
@@ -18,6 +19,8 @@ type UserRepository interface {
 	DeleteInactiveUsers() error
 	UpdateTwoFACode(user *entities.User) error
 	UpdateTwoFASettings(user *entities.User) error
+	UpdatePasswordRecoveryCode(user *entities.User) error
+	UpdatePassword(user *entities.User) error
 }
 
 type userRepository struct{}
@@ -29,9 +32,10 @@ func NewUserRepository() UserRepository {
 func (r *userRepository) FindByID(id int) (*entities.User, error) {
 	db := database.GetDBInstance()
 	user := &entities.User{}
-	query := "SELECT id, username, email, password, active, isTwoFAEnabled, twoFACode, twoFACodeExpiration FROM users WHERE id = ?"
+	query := "SELECT id, username, email, password, active, isTwoFAEnabled, twoFACode, twoFACodeExpiration, passwordRecoveryCode, recoveryCodeExpiration FROM users WHERE id = ?"
 
-	var twoFACodeExpiresAtStr string
+	var twoFACodeExpiresAtStr sql.NullString
+	var recoveryCodeExpiresAtStr sql.NullString
 
 	err := db.QueryRow(query, id).Scan(
 		&user.ID,
@@ -42,16 +46,32 @@ func (r *userRepository) FindByID(id int) (*entities.User, error) {
 		&user.Is2FAEnabled,
 		&user.TwoFACode,
 		&twoFACodeExpiresAtStr,
+		&user.PasswordRecoveryCode,
+		&recoveryCodeExpiresAtStr,
 	)
 	if err != nil {
 		return nil, errors.NewQueryError(err.Error())
 	}
 
-	parsedTime, err := time.Parse("2006-01-02 15:04:05", twoFACodeExpiresAtStr)
-	if err != nil {
-		return nil, errors.NewQueryError("invalid expiration time format: " + err.Error())
+	if twoFACodeExpiresAtStr.Valid {
+		parsedTime, err := time.Parse("2006-01-02 15:04:05", twoFACodeExpiresAtStr.String)
+		if err != nil {
+			return nil, errors.NewQueryError("invalid expiration time format: " + err.Error())
+		}
+		user.TwoFACodeExpiresAt = &parsedTime
+	} else {
+		user.TwoFACodeExpiresAt = nil
 	}
-	user.TwoFACodeExpiresAt = &parsedTime
+
+	if recoveryCodeExpiresAtStr.Valid {
+		parsedTime, err := time.Parse("2006-01-02 15:04:05", recoveryCodeExpiresAtStr.String)
+		if err != nil {
+			return nil, errors.NewQueryError("invalid expiration time format: " + err.Error())
+		}
+		user.RecoveryCodeExpiresAt = &parsedTime
+	} else {
+		user.RecoveryCodeExpiresAt = nil
+	}
 
 	return user, nil
 }
@@ -59,9 +79,10 @@ func (r *userRepository) FindByID(id int) (*entities.User, error) {
 func (r *userRepository) FindByEmail(email string) (*entities.User, error) {
 	db := database.GetDBInstance()
 	user := &entities.User{}
-	query := "SELECT id, username, email, password, active, isTwoFAEnabled, twoFACode, twoFACodeExpiration FROM users WHERE email = ?"
+	query := "SELECT id, username, email, password, active, isTwoFAEnabled, twoFACode, twoFACodeExpiration, passwordRecoveryCode, recoveryCodeExpiration FROM users WHERE email = ?"
 
-	var twoFACodeExpiresAtStr string
+	var twoFACodeExpiresAt sql.NullString
+	var recoveryCodeExpiresAt sql.NullString
 
 	err := db.QueryRow(query, email).Scan(
 		&user.ID,
@@ -71,17 +92,33 @@ func (r *userRepository) FindByEmail(email string) (*entities.User, error) {
 		&user.Active,
 		&user.Is2FAEnabled,
 		&user.TwoFACode,
-		&twoFACodeExpiresAtStr,
+		&twoFACodeExpiresAt,
+		&user.PasswordRecoveryCode,
+		&recoveryCodeExpiresAt,
 	)
 	if err != nil {
 		return nil, errors.NewQueryError(err.Error())
 	}
 
-	parsedTime, err := time.Parse("2006-01-02 15:04:05", twoFACodeExpiresAtStr)
-	if err != nil {
-		return nil, errors.NewQueryError("invalid expiration time format: " + err.Error())
+	if twoFACodeExpiresAt.Valid {
+		parsedTime, err := time.Parse("2006-01-02 15:04:05", twoFACodeExpiresAt.String)
+		if err != nil {
+			return nil, errors.NewQueryError("invalid expiration time format: " + err.Error())
+		}
+		user.TwoFACodeExpiresAt = &parsedTime
+	} else {
+		user.TwoFACodeExpiresAt = nil
 	}
-	user.TwoFACodeExpiresAt = &parsedTime
+
+	if recoveryCodeExpiresAt.Valid {
+		parsedTime, err := time.Parse("2006-01-02 15:04:05", recoveryCodeExpiresAt.String)
+		if err != nil {
+			return nil, errors.NewQueryError("invalid expiration time format: " + err.Error())
+		}
+		user.RecoveryCodeExpiresAt = &parsedTime
+	} else {
+		user.RecoveryCodeExpiresAt = nil
+	}
 
 	return user, nil
 }
@@ -149,6 +186,26 @@ func (r *userRepository) UpdateTwoFASettings(user *entities.User) error {
 	db := database.GetDBInstance()
 	query := "UPDATE users SET isTwoFAEnabled = ? WHERE id = ?"
 	_, err := db.Exec(query, user.Is2FAEnabled, user.ID)
+	if err != nil {
+		return errors.NewQueryError(err.Error())
+	}
+	return nil
+}
+
+func (r *userRepository) UpdatePasswordRecoveryCode(user *entities.User) error {
+	db := database.GetDBInstance()
+	query := "UPDATE users SET passwordRecoveryCode = ?, recoveryCodeExpiration = ? WHERE id = ?"
+	_, err := db.Exec(query, user.PasswordRecoveryCode, user.RecoveryCodeExpiresAt, user.ID)
+	if err != nil {
+		return errors.NewQueryError(err.Error())
+	}
+	return nil
+}
+
+func (r *userRepository) UpdatePassword(user *entities.User) error {
+	db := database.GetDBInstance()
+	query := "UPDATE users SET password = ?, passwordRecoveryCode = NULL, recoveryCodeExpiration = NULL WHERE id = ?"
+	_, err := db.Exec(query, user.Password, user.ID)
 	if err != nil {
 		return errors.NewQueryError(err.Error())
 	}

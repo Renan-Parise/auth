@@ -177,3 +177,45 @@ func (ac *AuthController) ConfirmToggleTwoFA(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "2FA setting updated"})
 }
+
+func (ac *AuthController) InitiatePasswordRecovery(c *gin.Context) {
+	var request struct {
+		Email string `json:"email"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		utils.GetLogger().WithError(err).Error("Failed to bind JSON in InitiatePasswordRecovery")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+
+	err := ac.authService.InitiatePasswordRecovery(request.Email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "password recovery email sent"})
+}
+
+func (ac *AuthController) ResetPassword(c *gin.Context) {
+	var request struct {
+		Email       string `json:"email"`
+		Code        string `json:"code"`
+		NewPassword string `json:"newPassword"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		utils.GetLogger().WithError(err).Error("Failed to bind JSON in ResetPassword")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+
+	err := ac.authService.ResetPassword(request.Email, request.Code, request.NewPassword)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "password has been reset successfully"})
+}

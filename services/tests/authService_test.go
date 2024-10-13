@@ -13,6 +13,14 @@ type mockUserRepository struct {
 	users map[string]entities.User
 }
 
+func (m *mockUserRepository) UpdatePasswordRecoveryCode(user *entities.User) error {
+	panic("unimplemented")
+}
+
+func (m *mockUserRepository) UpdatePassword(user *entities.User) error {
+	panic("unimplemented")
+}
+
 func (m *mockUserRepository) FindByID(id int) (*entities.User, error) {
 	panic("unimplemented")
 }

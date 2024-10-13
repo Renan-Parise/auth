@@ -21,6 +21,8 @@ func SetupRouter() *gin.Engine {
 		authRoutes.POST("/login", authController.Login)
 		authRoutes.POST("/register", authController.Register)
 		authRoutes.POST("/fa/confirm", authController.ConfirmTwoFA)
+		authRoutes.POST("/password/recover", authController.InitiatePasswordRecovery)
+		authRoutes.POST("/password/reset", authController.ResetPassword)
 
 		authRoutes.PUT("/update", middlewares.AuthMiddleware(), authController.Update)
 		authRoutes.DELETE("/deactivate", middlewares.AuthMiddleware(), authController.Deactivate)
