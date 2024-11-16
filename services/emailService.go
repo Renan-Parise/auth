@@ -3,8 +3,8 @@ package services
 import (
 	"fmt"
 
-	"github.com/Renan-Parise/codium-auth/entities"
-	"github.com/Renan-Parise/codium-auth/utils"
+	"github.com/Renan-Parise/auth/entities"
+	"github.com/Renan-Parise/auth/utils"
 )
 
 func (s *authService) sendPasswordRecoveryEmail(email, code string) error {

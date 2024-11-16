@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 
-	"github.com/Renan-Parise/codium-auth/database"
-	"github.com/Renan-Parise/codium-auth/repositories"
-	"github.com/Renan-Parise/codium-auth/routes"
-	"github.com/Renan-Parise/codium-auth/utils"
+	"github.com/Renan-Parise/auth/database"
+	"github.com/Renan-Parise/auth/repositories"
+	"github.com/Renan-Parise/auth/routes"
+	"github.com/Renan-Parise/auth/utils"
 	"github.com/joho/godotenv"
 	"github.com/robfig/cron/v3"
 )

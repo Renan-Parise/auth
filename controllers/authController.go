@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Renan-Parise/codium-auth/entities"
-	"github.com/Renan-Parise/codium-auth/services"
-	"github.com/Renan-Parise/codium-auth/utils"
+	"github.com/Renan-Parise/auth/entities"
+	"github.com/Renan-Parise/auth/services"
+	"github.com/Renan-Parise/auth/utils"
 	"github.com/gin-gonic/gin"
 )
 

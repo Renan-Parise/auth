@@ -1,4 +1,4 @@
-module github.com/Renan-Parise/codium-auth
+module github.com/Renan-Parise/auth
 
 go 1.22.2
 

@@ -43,8 +43,8 @@ A comprehensive authentication service built with Go, Gin framework, and MySQL. 
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/Renan-Parise/codium-auth.git
-   cd codium-auth
+   git clone https://github.com/Renan-Parise/auth.git
+   cd auth
 
 ## Configuration
 

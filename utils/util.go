@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Renan-Parise/codium-auth/entities"
-	"github.com/Renan-Parise/codium-auth/errors"
+	"github.com/Renan-Parise/auth/entities"
+	"github.com/Renan-Parise/auth/errors"
 )
 
 func Contains[T comparable](slice []T, value T) bool {

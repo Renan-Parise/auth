@@ -3,10 +3,10 @@ package services
 import (
 	"time"
 
-	"github.com/Renan-Parise/codium-auth/entities"
-	"github.com/Renan-Parise/codium-auth/errors"
-	"github.com/Renan-Parise/codium-auth/repositories"
-	"github.com/Renan-Parise/codium-auth/utils"
+	"github.com/Renan-Parise/auth/entities"
+	"github.com/Renan-Parise/auth/errors"
+	"github.com/Renan-Parise/auth/repositories"
+	"github.com/Renan-Parise/auth/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 

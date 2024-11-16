@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/Renan-Parise/codium-auth/errors"
+	"github.com/Renan-Parise/auth/errors"
 )
 
 var ErrTwoFARequired = errors.NewServiceError("2FA required")

@@ -3,7 +3,7 @@ package entities
 import (
 	"regexp"
 
-	"github.com/Renan-Parise/codium-auth/errors"
+	"github.com/Renan-Parise/auth/errors"
 )
 
 type Email struct {

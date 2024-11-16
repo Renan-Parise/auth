@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/Renan-Parise/codium-auth/database"
-	"github.com/Renan-Parise/codium-auth/entities"
-	"github.com/Renan-Parise/codium-auth/errors"
-	"github.com/Renan-Parise/codium-auth/utils"
+	"github.com/Renan-Parise/auth/database"
+	"github.com/Renan-Parise/auth/entities"
+	"github.com/Renan-Parise/auth/errors"
+	"github.com/Renan-Parise/auth/utils"
 )
 
 type UserRepository interface {
