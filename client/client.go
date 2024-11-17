@@ -3,7 +3,6 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -47,6 +46,12 @@ func (fs *financesService) CreateDefaultCategories(userID int64) error {
 
 	req.Header.Set("Content-Type", "application/json")
 
+	token, err := utils.GenerateServiceToken()
+	if err != nil {
+		return fmt.Errorf("failed to generate service token: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+
 	resp, err := fs.client.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to call finances service: %w", err)
@@ -54,8 +59,7 @@ func (fs *financesService) CreateDefaultCategories(userID int64) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusCreated {
-		utils.GetLogger().WithField("status", resp.StatusCode).Error("finances service responded with an error")
-		return errors.New("failed to create default categories")
+		return fmt.Errorf("failed to create default categories: status %d", resp.StatusCode)
 	}
 
 	return nil

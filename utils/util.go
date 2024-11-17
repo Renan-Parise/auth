@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/Renan-Parise/auth/entities"
 	"github.com/Renan-Parise/auth/errors"
+	"github.com/golang-jwt/jwt"
 )
 
 func Contains[T comparable](slice []T, value T) bool {
@@ -57,4 +59,19 @@ func SendEmail(email entities.Email) error {
 	}
 
 	return nil
+}
+
+func GenerateServiceToken() (string, error) {
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		return "", errors.NewServiceError("Failed to generate token: JWT")
+	}
+
+	claims := jwt.MapClaims{
+		"service": "auth",
+		"exp":     time.Now().Add(24 * time.Hour).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(secret))
 }
