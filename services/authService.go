@@ -3,6 +3,7 @@ package services
 import (
 	"time"
 
+	"github.com/Renan-Parise/auth/client"
 	"github.com/Renan-Parise/auth/entities"
 	"github.com/Renan-Parise/auth/errors"
 	"github.com/Renan-Parise/auth/repositories"
@@ -24,11 +25,15 @@ type AuthService interface {
 }
 
 type authService struct {
-	userRepo repositories.UserRepository
+	userRepo        repositories.UserRepository
+	financesService client.FinancesService
 }
 
-func NewAuthService(repo repositories.UserRepository) AuthService {
-	return &authService{userRepo: repo}
+func NewAuthService(repo repositories.UserRepository, finances client.FinancesService) AuthService {
+	return &authService{
+		userRepo:        repo,
+		financesService: finances,
+	}
 }
 
 func (s *authService) Login(email, password string) (string, error) {
@@ -77,6 +82,18 @@ func (s *authService) Register(user entities.User) error {
 	err = s.userRepo.Create(user)
 	if err != nil {
 		return errors.NewServiceError("failed to register user. please try again")
+	}
+
+	createdUser, err := s.userRepo.FindByEmail(user.Email)
+	if err != nil {
+		return errors.NewServiceError("failed to fetch created user details")
+	}
+
+	err = s.financesService.CreateDefaultCategories(int64(createdUser.ID))
+	if err != nil {
+		utils.GetLogger().WithError(err).Error("failed to create default categories for user")
+
+		return errors.NewServiceError("failed to create default categories for user")
 	}
 
 	return nil

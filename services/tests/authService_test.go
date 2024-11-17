@@ -67,7 +67,7 @@ func (m *mockUserRepository) Update(ID int, user entities.User) error {
 
 func TestRegister(t *testing.T) {
 	repo := &mockUserRepository{users: make(map[string]entities.User)}
-	service := services.NewAuthService(repo)
+	service := services.NewAuthService(repo, nil)
 
 	user := entities.User{
 		Username: "testuser",
@@ -84,7 +84,7 @@ func TestRegister(t *testing.T) {
 
 func TestLogin(t *testing.T) {
 	repo := &mockUserRepository{users: make(map[string]entities.User)}
-	service := services.NewAuthService(repo)
+	service := services.NewAuthService(repo, nil)
 
 	user := entities.User{
 		Username: "testuser",
@@ -104,7 +104,7 @@ func TestLogin(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	repo := &mockUserRepository{users: make(map[string]entities.User)}
-	service := services.NewAuthService(repo)
+	service := services.NewAuthService(repo, nil)
 
 	user := entities.User{
 		Username: "testuser",

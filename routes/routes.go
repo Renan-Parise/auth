@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/Renan-Parise/auth/client"
 	"github.com/Renan-Parise/auth/controllers"
 	"github.com/Renan-Parise/auth/middlewares"
 	"github.com/Renan-Parise/auth/repositories"
@@ -13,7 +14,8 @@ func SetupRouter() *gin.Engine {
 	router := gin.Default()
 
 	userRepo := repositories.NewUserRepository()
-	authService := services.NewAuthService(userRepo)
+	financesService := client.NewFinancesService()
+	authService := services.NewAuthService(userRepo, financesService)
 	authController := controllers.NewAuthController(authService)
 
 	authRoutes := router.Group("/auth")
